@@ -36,7 +36,7 @@
   <body>
       <div class="nav-container">
         <div class="navbar-left">
-          <img class="navbar-left-logo" src="http://keenthemes.com/preview/metronic/theme/assets/global/plugins/jcrop/demos/demo_files/image1.jpg"/>
+          <img src="" alt="">
           <div class="navbar-left-name">ติวออนไลน์</div>
         </div>
         <div class="navbar-right">
@@ -79,82 +79,35 @@
           <div class="address"> Bacgkok Thailand</div>
           <div class="weather">
             <img class="weather-logo" id="weather-logo"/>
-            <div class="weather-value">
-              55.8 C
+            <div class="weather-value" id="weather-value">
             </div>
           </div>
-          <div class="raining">
-            <div class="raining-text">
-                โอกาสเกิดฝนตก
-            </div>
-            <div class="raining-value">
-                24 %
-            </div>
-          </div>
+
           <div class="humidity">
             <div class="humidity-text">
                 ความชื้น
             </div>
-            <div class="humidity-value">
-              79%
-            </div>
+            <div class="humidity-value" id="humidity-value"></div>
           </div>
           <div class="moisture">
             <div class="moisture-text">
                   Soil moisture
             </div>
-            <div class="moisture-value">
-                800%
-            </div>
+            <div class="moisture-value" id="moisture-value"></div>
           </div>
           <div class="spray">
             <button class="spray-button">กดค้าง<br>  เพื่อรดน้ำ</button>
           </div>
-          <table style="width: 100%" id="table">
-            <tr>
-              <th>
-                วัน/เวลา
-              </th>
-              <th>
-                auto/manual
-              </th>
-              <th>
-                ความชื้น
-              </th>
-              <th>
-                อุณหภูมิ
-              </th>
-            </tr>
-            <tr>
-              <td>
-                23/2/2561
-              </td>
-              <td>
-                ออโต้
-              </td>
-              <td>
-                200%
-              </td>
-              <td>
-                ดี
-              </td>
-            </tr>
+          <div class="wrapper" id="wrapper">
+            <table style="width: 100%" id="table">
+              <tr>
+                <th>เวลา</th>
+                <th>โหมด</th>
+                <th>ความชื้น</th>
+              </tr>
+            </table>
+          </div>
 
-            <tr>
-              <td>
-                23/2/2561
-              </td>
-              <td>
-                ออโต้
-              </td>
-              <td>
-                200%
-              </td>
-              <td>
-                ดี
-              </td>
-            </tr>
-          </table>
           <!-- <canvas id="ct-chart" width="400" height="400"></canvas> -->
           <canvas id="myChart"></canvas>
 
@@ -177,13 +130,6 @@ let chart = new Chart(ctx, {
             backgroundColor: 'rgb(255, 99, 132)',
             fill: false,
             data: moistureChart,
-        },
-        {
-            label: "อุณหภูมิ",
-            borderColor: '#2eb60a',
-            backgroundColor: '#2eb60a',
-            fill: false,
-            data: tempChart,
         }
       ]
     },
@@ -193,8 +139,9 @@ let chart = new Chart(ctx, {
 });
 
 $(function () {
-  getLog()
+  getMode()
   getStatus()
+  getWeather()
 })
 
 
@@ -205,6 +152,10 @@ let moisture  = 0
 
 root.child('Soil moisture').on('value', function(snapshot) {
   moisture = snapshot.val()
+
+  const moistureDOM = document.getElementById('moisture-value')
+  moistureDOM.innerHTML = moisture
+
 })
 
 
@@ -243,6 +194,16 @@ root.child('newLogs').on('child_added', function(snapshot) {
   console.log('newLogs', snapshot.val())
   const { date, status, moisture } = snapshot.val()
   addTable(date, status, moisture)
+  if (labelChart.length > 10) {
+    labelChart.shift()
+    moistureChart.shift()
+  }
+  labelChart.push(date)
+  moistureChart.push(moisture)
+  console.log('moisture', moisture)
+  chart.update()
+  const scroll = document.getElementById('wrapper')
+  scroll.scrollTop = scroll.scrollHeight;
 })
 
 
@@ -265,19 +226,7 @@ function addTable (date, status, moisture) {
   `
   $("#table").append(newTable)
 }
-function getLog () {
-  $.getJSON('https://senior-project-5657a.firebaseio.com/logs.json', function (data) {
-    let result = Object.values(data)
-    result.map((data) => {
-      labelChart.push(data.date)
-      moistureChart.push(data.moisture)
-      tempChart.push(data.temp)
-      addTable(data.date, data.status, data.moisture, data.temp)
-    })
-    chart.update()
-  })
-}
-function getStatus () {
+function getMode () {
   $.getJSON('https://senior-project-5657a.firebaseio.com/Type.json', function (data) {
     if (data == 'auto') {
       console.log('auto')
@@ -289,25 +238,18 @@ function getStatus () {
       $(".spray-button").css({'display': 'block'})
     }
   })
-  $.getJSON( "https://api.wunderground.com/api/6a17aee2cce057e7/conditions/q/Thailand/bangkok.json", function( data ) {
-    let icon = data.current_observation.icon_url
-    document.getElementById('weather-logo').src = icon
-  })
 }
-function updateLog (status) {
-  const date = getDateTime()
-  getWeather().then(data => {
-    let { temp } = data
-    labelChart.push(date)
-    moistureChart.push(moisture)
-    tempChart.push(temp)
-    chart.update()
-    addTable(date, status, moisture, temp)
-    root.child('logs').push({
-      date, moisture, temp, status
-    })
+function getStatus () {
+  $.getJSON('https://senior-project-5657a.firebaseio.com/status.json', function (data) {
+    if (data == '0') {
+      $("#dn2").attr("checked", true)
+    } else {
+      $("#dn2").attr("checked", false)
+    }
   })
+
 }
+
 function getDateTime () {
   const d = new Date()
   const year = d.getFullYear() + 543;
@@ -319,14 +261,16 @@ function getDateTime () {
   return hour + ':' + minute + ':' + second + ' ' + day + '/' + month + '/' + year
 }
 function getWeather () {
-  return new Promise(function (resolve, reject) {
-    $.getJSON( "https://api.wunderground.com/api/6a17aee2cce057e7/conditions/q/Thailand/bangkok.json", function( data ) {
+
+  $.getJSON( "https://api.wunderground.com/api/6a17aee2cce057e7/conditions/q/Thailand/bangkok.json", function( data ) {
       let location = data.current_observation.display_location.full //ที่อยู่
       let temp = data.current_observation.temp_c //องศา
       let humidity = data.current_observation.relative_humidity // ความชื้น
-      let weather = data.current_observation.weather //สภาพอากาศ
-      resolve({ location, temp, humidity, weather })
-    })
+      let icon = data.current_observation.icon_url
+    // let weather = data.current_observation.weather //สภาพอากาศ
+      document.getElementById('humidity-value').innerHTML = humidity
+      document.getElementById('weather-value').innerHTML = temp
+      document.getElementById('weather-logo').src = icon
   })
 }
 function openProfile() {
@@ -348,6 +292,11 @@ $(".main-container").click(function() {
 </script>
 
 <style>
+.wrapper {
+  height: 400px;
+  width: 100%;
+  overflow: auto;
+}
 .main-container {
   margin-left: auto;
   margin-right: auto;
@@ -370,18 +319,6 @@ $(".main-container").click(function() {
 }
 .weather-value {
   font-size: 20px;
-  padding-left: 12px;
-}
-.raining {
-  display:flex;
-  font-size: 20px;
-  margin-top: 24px;
-}
-.raining-text {
-  font-weight: bold;
-}
-.raining-value {
-  font-weight: lighter;
   padding-left: 12px;
 }
 .humidity {
