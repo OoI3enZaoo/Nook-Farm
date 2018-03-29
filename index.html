@@ -43,12 +43,6 @@
               <ul>
                 <li><a href="#">Home</a></li>
                 <li><a href="#">Profile</a></li>
-                  <div>
-                    <select class="form-control" name="features" style="width:150px;">
-                      <option value="auto" selected>Auto</option>
-                      <option value="manual">Manual</option>
-                    </select>
-                  </div>
                 <li><a href="#">Logout</a></li>
                 <li>
                   <div id="profile"  onClick="openProfile()"> </div>
@@ -63,6 +57,10 @@
                           <div class="profile-switch">
                             <input type="checkbox" id="dn" class="dn">
                           	<label for="dn" class="toggle"><span class="toggle__handler"></span></label>
+                          </div>
+                          <div class="profile-switch">
+                            <input type="checkbox" id="dn2" class="dn2">
+                          	<label for="dn2" class="toggle2"><span class="toggle2__handler"></span></label>
                           </div>
                           <div class="profile-logout">
                             ออกจากระบบ
@@ -210,26 +208,43 @@ root.child('Soil moisture').on('value', function(snapshot) {
 })
 
 
-$(".form-control").change(function() {
-  const status = $(".form-control option:selected").text()
-  updateLog(status)
-})
 
-$("#dn").change(function() {$( "input:checked" ).val()
+$("#dn").change(function() {
   const value = $("#dn:checked").val()
-  let status = null
+  let mode = null
   if (value ==  'on') {
-    status = 'auto'
+    mode = 'auto'
     $(".spray-button").css({'display': 'none'})
   }
   else {
-    status = 'manual'
+    mode = 'manual'
     $(".spray-button").css({'display': 'block'})
   }
-  updateLog(status)
-  root.update({Type: status})
+  root.update({Type: mode})
+  console.log('mode', mode)
+})
+
+$("#dn2").change(function() {
+  const value = $("#dn2:checked").val()
+  let status = null
+  if (value ==  'on') {
+    status = 0
+    console.log('status close')
+  }
+  else {
+    status = 1
+    console.log('status open')
+  }
+  root.update({status})
   console.log('status', status)
 })
+
+root.child('newLogs').on('child_added', function(snapshot) {
+  console.log('newLogs', snapshot.val())
+  const { date, status, moisture } = snapshot.val()
+  addTable(date, status, moisture)
+})
+
 
 $(".spray-button").mousedown(function() {
   console.log('mousedown')
@@ -240,13 +255,12 @@ $(".spray-button").mouseup(function() {
   console.log('mouseup')
     root.update({Spray: 0})
 })
-function addTable (date, status, moisture, temp) {
+function addTable (date, status, moisture) {
   let newTable = `
     <tr>
       <td>${date}</td>
       <td>${status}</td>
       <td>${moisture}</td>
-      <td>${temp}</td>
     </tr>
   `
   $("#table").append(newTable)
@@ -574,6 +588,56 @@ ul li a:hover {
 	-webkit-transform: translateX(0px);
 	transform: translateX(0px);
 }
+
+
+
+.toggle2{
+	cursor: pointer;
+	display: inline-block;
+	position: relative;
+	width: 120px;
+	height: 35px;
+	background: #36BEF2;
+	border-radius: 5px;
+	-webkit-transition: all 200ms cubic-bezier(0.445, 0.05, 0.55, 0.95);
+	transition: all 200ms cubic-bezier(0.445, 0.05, 0.55, 0.95);
+}
+.toggle2:before, .toggle2:after{
+	position: absolute;
+	line-height: 35px;
+	font-size: 14px;
+	z-index: 2;
+	-webkit-transition: all 200ms cubic-bezier(0.445, 0.05, 0.55, 0.95);
+	transition: all 200ms cubic-bezier(0.445, 0.05, 0.55, 0.95);
+}
+.toggle2:before{
+	content: "OPEN";
+	left: 7px;
+	color: #36BEF2;
+}
+.toggle2:after{
+	content: "CLOSE";
+	right:7px;
+	color: #fff;
+}
+.toggle2__handler{
+	display: inline-block;
+	position: relative;
+	z-index: 1;
+	background: #fff;
+	width: 65px;
+	height: 29px;
+	border-radius: 3px;
+	top: 3px;
+	left: 3px;
+	-webkit-transition: all 200ms cubic-bezier(0.445, 0.05, 0.55, 0.95);
+	transition: all 200ms cubic-bezier(0.445, 0.05, 0.55, 0.95);
+	-webkit-transform: translateX(0px);
+	transform: translateX(0px);
+}
+
+
+
 input {
   display:none;
 }
@@ -592,6 +656,23 @@ input:checked + .toggle .toggle__handler{
 	transform: translateX(60px);
 	border-color: #fff;
 }
+
+input:checked + .toggle2{
+	background: red;
+}
+input:checked + .toggle2:before{
+	color: #fff;
+}
+input:checked + .toggle2:after{
+	color: red;
+}
+input:checked + .toggle2 .toggle2__handler{
+	width: 54px;
+	-webkit-transform: translateX(60px);
+	transform: translateX(60px);
+	border-color: #fff;
+}
+
 .spray {
   display:flex;
   justify-content:center;
