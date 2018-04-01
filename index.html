@@ -19,6 +19,7 @@
 
     <script src="https://www.gstatic.com/firebasejs/4.10.1/firebase.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
+    <script src="https://momentjs.com/downloads/moment.min.js" charset="utf-8"></script>
     <script>
       // Initialize Firebase
       var config = {
@@ -96,11 +97,12 @@
             <div class="moisture-value" id="moisture-value"></div>
           </div>
           <div class="spray">
-            <button class="spray-button">กดค้าง<br>  เพื่อรดน้ำ</button>
+            <button class="spray-button">กดค้าง<br>เพื่อรดน้ำ</button>
           </div>
           <div class="wrapper" id="wrapper">
             <table style="width: 100%" id="table">
               <tr>
+                <th>วันที่</th>
                 <th>เวลา</th>
                 <th>โหมด</th>
                 <th>ความชื้น</th>
@@ -216,10 +218,18 @@ $(".spray-button").mouseup(function() {
   console.log('mouseup')
     root.update({Spray: 0})
 })
-function addTable (date, status, moisture) {
+function addTable (datetime, status, moisture) {
+  const date = moment(datetime).format('DD/M/YYYY')
+  const time = moment(datetime).format('HH:mm:ss')
+  console.log('datena', date)
+  console.log('timena', time)
+  // const time =
+
+
   let newTable = `
     <tr>
       <td>${date}</td>
+      <td>${time}</td>
       <td>${status}</td>
       <td>${moisture}</td>
     </tr>
