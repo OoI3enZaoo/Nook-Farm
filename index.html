@@ -97,7 +97,14 @@
             <div class="moisture-value" id="moisture-value"></div>
           </div>
           <div class="spray">
-            <button class="spray-button">กดค้าง<br>เพื่อรดน้ำ</button>
+            <div id="spray-open">
+              <button class="spray-open">กดเพื่อเปิดน้ำ</button>
+              <p>น้ำปิดอยู่</p>
+            </div>
+            <div id="spray-close"  style="display:none;">
+              <button class="spray-close">กดเพื่อปิดน้ำ</button>
+              <p>น้ำเปิดอยู่</p>
+            </div>
           </div>
           <div class="wrapper" id="wrapper">
             <table style="width: 100%" id="table">
@@ -167,11 +174,11 @@ $("#dn").change(function() {
   let mode = null
   if (value ==  'on') {
     mode = 'auto'
-    $(".spray-button").css({'display': 'none'})
+    $(".spray").css({'display': 'none'})
   }
   else {
     mode = 'manual'
-    $(".spray-button").css({'display': 'block'})
+    $(".spray").css({'display': 'block'})
   }
   root.update({Type: mode})
   console.log('mode', mode)
@@ -209,14 +216,19 @@ root.child('newLogs').on('child_added', function(snapshot) {
 })
 
 
-$(".spray-button").mousedown(function() {
-  console.log('mousedown')
 
+
+$(".spray-open").click(function () {
+  console.log('spray-open')
   root.update({Spray: 1})
+  document.getElementById('spray-open').style.display = 'none'
+  document.getElementById('spray-close').style.display = 'block'
 })
-$(".spray-button").mouseup(function() {
-  console.log('mouseup')
-    root.update({Spray: 0})
+$(".spray-close").click(function () {
+  console.log('spray-close')
+  root.update({Spray: 0})
+  document.getElementById('spray-open').style.display = 'block'
+  document.getElementById('spray-close').style.display = 'none'
 })
 function addTable (datetime, status, moisture) {
   const date = moment(datetime).format('DD/M/YYYY')
@@ -241,11 +253,11 @@ function getMode () {
     if (data == 'auto') {
       console.log('auto')
       $("#dn").attr("checked", true)
-      $(".spray-button").css({'display': 'none'})
+      $(".spray").css({'display': 'none'})
     } else {
       console.log('manual')
       $("#dn").attr("checked", false)
-      $(".spray-button").css({'display': 'block'})
+      $(".spray").css({'display': 'block'})
     }
   })
 }
