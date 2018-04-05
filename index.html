@@ -163,8 +163,8 @@ let tempChart = new Chart(ctx2, {
         labels: dateTime,
         datasets: [{
             label: "อุณหภูมิ",
-            borderColor: 'rgb(255, 99, 132)',
-            backgroundColor: 'rgb(255, 99, 132)',
+            borderColor: 'rgb(70, 255, 200)',
+            backgroundColor: 'rgb(70, 255, 200)',
             fill: false,
             data: tempArray,
         }
@@ -348,14 +348,18 @@ $(".main-container").click(function() {
   width: calc(100vw - 16px);
   display: flex;
   justify-content: space-between;
-
 }
+
 .row {
   width: 50%;
   display: flex;
   flex-direction: column;
   text-align: center;
   font-size: 22px;
+  margin-left:20px;
+}
+.row::after {
+  width: auto;
 }
 .title {
   margin-bottom: 18px;
