@@ -113,37 +113,63 @@
                 <th>เวลา</th>
                 <th>โหมด</th>
                 <th>ความชื้น</th>
+                <th>อุณหภูมิ</th>
               </tr>
             </table>
           </div>
 
           <!-- <canvas id="ct-chart" width="400" height="400"></canvas> -->
-          <canvas id="myChart"></canvas>
+          <div class="chart-container">
+            <div class="row">
+              <div class="title">กราฟแสดงความชื้น</div>
+              <canvas id="moisture-chart" height="150px;"></canvas>
+            </div>
+            <div class="row">
+              <div class="title">กราฟแสดงอุณหภูมิ</div>
+              <canvas id="temp-chart" height="150px;"></canvas>
+            </div>
+          </div>
 
       </div>
   </body>
 </html>
 <script type="text/javascript">
-let labelChart = []
-let moistureChart = []
-let tempChart = []
-var ctx = document.getElementById('myChart').getContext('2d');
-let chart = new Chart(ctx, {
+let dateTime = []
+let moistureArray = []
+let tempArray = []
+var ctx = document.getElementById('moisture-chart').getContext('2d');
+var ctx2 = document.getElementById('temp-chart').getContext('2d');
+let moistureChart = new Chart(ctx, {
     type: 'line',
 
     data: {
-        labels: labelChart,
+        labels: dateTime,
         datasets: [{
             label: "ความชื้น",
             borderColor: 'rgb(255, 99, 132)',
             backgroundColor: 'rgb(255, 99, 132)',
             fill: false,
-            data: moistureChart,
+            data: moistureArray,
         }
       ]
     },
+    options: {}
+});
 
-    // Configuration options go here
+let tempChart = new Chart(ctx2, {
+    type: 'line',
+
+    data: {
+        labels: dateTime,
+        datasets: [{
+            label: "อุณหภูมิ",
+            borderColor: 'rgb(255, 99, 132)',
+            backgroundColor: 'rgb(255, 99, 132)',
+            fill: false,
+            data: tempArray,
+        }
+      ]
+    },
     options: {}
 });
 
@@ -201,16 +227,19 @@ $("#dn2").change(function() {
 
 root.child('newLogs').on('child_added', function(snapshot) {
   console.log('newLogs', snapshot.val())
-  const { date, status, moisture } = snapshot.val()
-  addTable(date, status, moisture)
-  if (labelChart.length > 10) {
-    labelChart.shift()
-    moistureChart.shift()
+  const { date, status, moisture, temp } = snapshot.val()
+  addTable(date, status, moisture, temp)
+  if (dateTime.length > 10) {
+    dateTime.shift()
+    moistureArray.shift()
+    tempArray.shift()
   }
-  labelChart.push(date)
-  moistureChart.push(moisture)
+  dateTime.push(date)
+  moistureArray.push(moisture)
+  tempArray.push(temp)
   console.log('moisture', moisture)
-  chart.update()
+  moistureChart.update()
+  tempChart.update()
   const scroll = document.getElementById('wrapper')
   scroll.scrollTop = scroll.scrollHeight;
 })
@@ -230,7 +259,7 @@ $(".spray-close").click(function () {
   document.getElementById('spray-open').style.display = 'block'
   document.getElementById('spray-close').style.display = 'none'
 })
-function addTable (datetime, status, moisture) {
+function addTable (datetime, status, moisture, temp) {
   const date = moment(datetime).format('DD/M/YYYY')
   const time = moment(datetime).format('HH:mm:ss')
   console.log('datena', date)
@@ -244,6 +273,7 @@ function addTable (datetime, status, moisture) {
       <td>${time}</td>
       <td>${status}</td>
       <td>${moisture}</td>
+      <td>${temp}</td>
     </tr>
   `
   $("#table").append(newTable)
@@ -314,6 +344,22 @@ $(".main-container").click(function() {
 </script>
 
 <style>
+.chart-container {
+  width: calc(100vw - 16px);
+  display: flex;
+  justify-content: space-between;
+
+}
+.row {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  font-size: 22px;
+}
+.title {
+  margin-bottom: 18px;
+}
 .wrapper {
   height: 400px;
   width: 100%;
