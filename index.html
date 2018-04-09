@@ -46,6 +46,12 @@
                 <li><a href="#">Profile</a></li>
                 <li><a href="#">Logout</a></li>
                 <li>
+                  <div id="status" class="status"></div>
+                </li>
+                <li>
+                  <div id="mode" class="mode"></div>
+                </li>
+                <li>
                   <div id="profile"  onClick="openProfile()"> </div>
                   <div id="setting-box">
                     <div class="setting-container">
@@ -57,7 +63,7 @@
                           </div>
                           <div class="profile-switch">
                             <input type="checkbox" id="dn" class="dn">
-                          	<label for="dn" class="toggle"><span class="toggle__handler"></span></label>
+                            <label for="dn" class="toggle"><span class="toggle__handler"></span></label>
                           </div>
                           <div class="profile-switch">
                             <input type="checkbox" id="dn2" class="dn2">
@@ -201,10 +207,12 @@ $("#dn").change(function() {
   if (value ==  'on') {
     mode = 'auto'
     $(".spray").css({'display': 'none'})
+    $("#mode").html('โหมด: ออโต้')
   }
   else {
     mode = 'manual'
     $(".spray").css({'display': 'block'})
+    $("#mode").html('โหมด: บังคับเอง')
   }
   root.update({Type: mode})
   console.log('mode', mode)
@@ -216,10 +224,13 @@ $("#dn2").change(function() {
   if (value ==  'on') {
     status = 0
     console.log('status close')
+    $("#status").html('สถานะ: ออฟไลน์')
   }
   else {
     status = 1
     console.log('status open')
+    $("#status").html('สถานะ: ออนไลน์')
+
   }
   root.update({status})
   console.log('status', status)
@@ -284,10 +295,12 @@ function getMode () {
       console.log('auto')
       $("#dn").attr("checked", true)
       $(".spray").css({'display': 'none'})
+      $("#mode").html('โหมด: ออโต้')
     } else {
       console.log('manual')
       $("#dn").attr("checked", false)
       $(".spray").css({'display': 'block'})
+      $("#mode").html('โหมด: บังคับเอง')
     }
   })
 }
@@ -295,8 +308,10 @@ function getStatus () {
   $.getJSON('https://senior-project-5657a.firebaseio.com/status.json', function (data) {
     if (data == '0') {
       $("#dn2").attr("checked", true)
+      $("#status").html('สถานะ: ออฟไลน์')
     } else {
       $("#dn2").attr("checked", false)
+      $("#status").html('สถานะ: ออนไลน์')
     }
   })
 
@@ -458,7 +473,7 @@ table, th, td {
   padding-left: 20px;
 }
 .navbar-right {
-  width: 50%;
+  width: 68%;
 
 }
 
@@ -527,7 +542,7 @@ ul li a:hover {
   margin-left: 10px;
 }
 .profile-logout {
-  font-size: 14px;
+  font-size: 16px;
   padding: 4px;
   border-radius: 4px;
 
@@ -539,8 +554,8 @@ ul li a:hover {
 .profile-switch {
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 8px 0px;
+  justify-content: flex-start;
+  padding: 8px 17px;
 
 }
 
@@ -700,5 +715,15 @@ input:checked + .toggle2 .toggle2__handler{
 }
 .spray-button:active {
   box-shadow: 0 0 4px 1px rgba(0, 0, 0, 0.3);
+}
+.status {
+  padding-left: 3px;
+  font-weight: bold;
+  font-size: 18px;
+}
+.mode {
+  padding-left: 3px;
+  font-weight: bold;
+  font-size: 18px;
 }
 </style>
