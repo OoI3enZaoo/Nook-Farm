@@ -162,6 +162,7 @@ let chartData = {
   moisture: [],
   temp: [],
 }
+let newItem = false
 var ctx = document.getElementById('moisture-chart').getContext('2d');
 var ctx2 = document.getElementById('temp-chart').getContext('2d');
 let moistureChart = new Chart(ctx, {
@@ -282,36 +283,72 @@ $("#dn2").change(function() {
   console.log('status', status)
 })
 
-root.child('newLogs').on('child_added', function(snapshot) {
-  // console.log('newLogs', snapshot.val())
-  const { date, status, moisture, temp } = snapshot.val()
-  const newDate = moment(date).format('DD/M/YYYY')
-  const newTime = moment(date).format('HH:mm:ss')
-  addTable(newDate, newTime, status, moisture, temp)
-  if ( chartData.date.length > 10) {
-    chartData.date.shift()
-    chartData.moisture.shift()
-    chartData.temp.shift()
-    console.log('shift')
+root.child('newLogs').on('child_added', function (snapshot) {
+  if (newItem) {
+    console.log('newLogs[child_added]')
+    const { date, status, moisture, temp } = snapshot.val()
+    const newDate = moment(date).format('DD/M/YYYY')
+    const newTime = moment(date).format('HH:mm:ss')
+    addTable(newDate, newTime, status, moisture, temp, true)
+    if ( chartData.date.length > 10) {
+      chartData.date.shift()
+      chartData.moisture.shift()
+      chartData.temp.shift()
+    }
+    chartData.date.push(newDate)
+    chartData.moisture.push(moisture)
+    chartData.temp.push(temp)
+
+    logData.date.push(newDate)
+    logData.time.push(newTime)
+    logData.moisture.push(moisture)
+    logData.temp.push(temp)
+
+    logObjectData.push({
+      date: newDate,
+      time: newTime,
+      moisture,
+      temp,
+      status,
+    })
+    moistureChart.update()
+    tempChart.update()
   }
-  chartData.date.push(newDate)
-  chartData.moisture.push(moisture)
-  chartData.temp.push(temp)
+})
+root.child('newLogs').once('value', function(snapshot) {
 
-  logData.date.push(newDate)
-  logData.time.push(newTime)
-  logData.moisture.push(moisture)
-  logData.temp.push(temp)
+  const value = Object.values(snapshot.val())
+  console.log('newLogs[once]', value)
+  value.map(data => {
+    const { date, status, moisture, temp } = data
+    const newDate = moment(date).format('DD/M/YYYY')
+    const newTime = moment(date).format('HH:mm:ss')
+    addTable(newDate, newTime, status, moisture, temp)
+    if ( chartData.date.length > 10) {
+      chartData.date.shift()
+      chartData.moisture.shift()
+      chartData.temp.shift()
+    }
+    chartData.date.push(newDate)
+    chartData.moisture.push(moisture)
+    chartData.temp.push(temp)
 
-  logObjectData.push({
-    date: newDate,
-    time: newTime,
-    moisture,
-    temp,
-    status,
+    logData.date.push(newDate)
+    logData.time.push(newTime)
+    logData.moisture.push(moisture)
+    logData.temp.push(temp)
+
+    logObjectData.push({
+      date: newDate,
+      time: newTime,
+      moisture,
+      temp,
+      status,
+    })
+    moistureChart.update()
+    tempChart.update()
   })
-  moistureChart.update()
-  tempChart.update()
+  newItem = true
   // const scroll = document.getElementById('wrapper')
   // scroll.scrollTop = scroll.scrollHeight;
 })
@@ -331,7 +368,7 @@ $(".spray-close").click(function () {
   document.getElementById('spray-open').style.display = 'block'
   document.getElementById('spray-close').style.display = 'none'
 })
-function addTable (date, time, status, moisture, temp) {
+function addTable (date, time, status, moisture, temp, prepend = false) {
 
   let newTable = `
     <tr>
@@ -342,7 +379,11 @@ function addTable (date, time, status, moisture, temp) {
       <td>${temp}</td>
     </tr>
   `
-  $("#table").prepend(newTable)
+  if (prepend) {
+    $("#table").prepend(newTable)
+  } else {
+    $("#table").append(newTable)
+  }
 }
 function getMode () {
   $.getJSON('https://senior-project-5657a.firebaseio.com/Type.json', function (data) {
