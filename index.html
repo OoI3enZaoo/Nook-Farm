@@ -112,6 +112,16 @@
               <p>น้ำเปิดอยู่</p>
             </div>
           </div>
+
+          <div class="input-control">
+            <input
+            id="searching-data"
+            class="search-input"
+            type="text"
+            placeholder="กรอกข้อความเพื่อค้นหา"
+            style="display:block;"
+          >
+          </div>
           <div class="wrapper" id="wrapper">
             <table style="width: 100%" id="table">
               <tr>
@@ -140,22 +150,33 @@
   </body>
 </html>
 <script type="text/javascript">
-let dateTime = []
 let moistureArray = []
 let tempArray = []
+let logObjectData = []
+let logData = {
+  date: [],
+  time: [],
+  moisture: [],
+  temp: [],
+}
+let chartData = {
+  date: [],
+  moisture: [],
+  temp: [],
+}
 var ctx = document.getElementById('moisture-chart').getContext('2d');
 var ctx2 = document.getElementById('temp-chart').getContext('2d');
 let moistureChart = new Chart(ctx, {
     type: 'line',
 
     data: {
-        labels: dateTime,
+        labels: chartData.date,
         datasets: [{
             label: "ความชื้น",
             borderColor: 'rgb(255, 99, 132)',
             backgroundColor: 'rgb(255, 99, 132)',
             fill: false,
-            data: moistureArray,
+            data: chartData.moisture,
         }
       ]
     },
@@ -166,13 +187,13 @@ let tempChart = new Chart(ctx2, {
     type: 'line',
 
     data: {
-        labels: dateTime,
+        labels: chartData.date,
         datasets: [{
             label: "อุณหภูมิ",
             borderColor: 'rgb(70, 255, 200)',
             backgroundColor: 'rgb(70, 255, 200)',
             fill: false,
-            data: tempArray,
+            data: chartData.temp,
         }
       ]
     },
@@ -185,7 +206,34 @@ $(function () {
   getWeather()
 })
 
+$('#searching-data').on('input', function() {
+    const value = $("#searching-data").val()
 
+    const { date, time } = logData
+    // const dateTime = [...date, ...time]
+    const _logObjectData = logObjectData.filter ((data, index) => {
+      if (data.date.search(value) !== -1 || data.time.search(value) !== -1) {
+        return data
+      }
+    })
+
+    $("#table").html('')
+    _logObjectData.map(({date, time, status, moisture, temp }) => {
+      let newTable = `
+        <tr>
+          <td>${date}</td>
+          <td>${time}</td>
+          <td>${status}</td>
+          <td>${moisture}</td>
+          <td>${temp}</td>
+        </tr>
+      `
+      $("#table").append(newTable)
+    })
+
+
+
+});
 const root = firebase.database().ref()
 
 let moisture  = 0
@@ -237,22 +285,37 @@ $("#dn2").change(function() {
 })
 
 root.child('newLogs').on('child_added', function(snapshot) {
-  console.log('newLogs', snapshot.val())
+  // console.log('newLogs', snapshot.val())
   const { date, status, moisture, temp } = snapshot.val()
-  addTable(date, status, moisture, temp)
-  if (dateTime.length > 10) {
-    dateTime.shift()
-    moistureArray.shift()
-    tempArray.shift()
+  const newDate = moment(date).format('DD/M/YYYY')
+  const newTime = moment(date).format('HH:mm:ss')
+  addTable(newDate, newTime, status, moisture, temp)
+  if ( chartData.date.length > 10) {
+    chartData.date.shift()
+    chartData.moisture.shift()
+    chartData.temp.shift()
+    console.log('shift')
   }
-  dateTime.push(date)
-  moistureArray.push(moisture)
-  tempArray.push(temp)
-  console.log('moisture', moisture)
+  chartData.date.push(newDate)
+  chartData.moisture.push(moisture)
+  chartData.temp.push(temp)
+
+  logData.date.push(newDate)
+  logData.time.push(newTime)
+  logData.moisture.push(moisture)
+  logData.temp.push(temp)
+
+  logObjectData.push({
+    date: newDate,
+    time: newTime,
+    moisture,
+    temp,
+    status,
+  })
   moistureChart.update()
   tempChart.update()
-  const scroll = document.getElementById('wrapper')
-  scroll.scrollTop = scroll.scrollHeight;
+  // const scroll = document.getElementById('wrapper')
+  // scroll.scrollTop = scroll.scrollHeight;
 })
 
 
@@ -270,13 +333,7 @@ $(".spray-close").click(function () {
   document.getElementById('spray-open').style.display = 'block'
   document.getElementById('spray-close').style.display = 'none'
 })
-function addTable (datetime, status, moisture, temp) {
-  const date = moment(datetime).format('DD/M/YYYY')
-  const time = moment(datetime).format('HH:mm:ss')
-  console.log('datena', date)
-  console.log('timena', time)
-  // const time =
-
+function addTable (date, time, status, moisture, temp) {
 
   let newTable = `
     <tr>
@@ -287,7 +344,7 @@ function addTable (datetime, status, moisture, temp) {
       <td>${temp}</td>
     </tr>
   `
-  $("#table").append(newTable)
+  $("#table").prepend(newTable)
 }
 function getMode () {
   $.getJSON('https://senior-project-5657a.firebaseio.com/Type.json', function (data) {
@@ -725,5 +782,15 @@ input:checked + .toggle2 .toggle2__handler{
   padding-left: 3px;
   font-weight: bold;
   font-size: 18px;
+}
+
+.input-control {
+  width: 100%;
+  height:100%;
+  display: flex;
+  justify-content: flex-end;
+}
+.search-input {
+  height: 20px
 }
 </style>
