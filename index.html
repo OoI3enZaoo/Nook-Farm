@@ -122,15 +122,18 @@
             style="display:block;"
           >
           </div>
+          <table style="width: 100%">
+            <tr>
+              <th>วันที่</th>
+              <th>เวลา</th>
+              <th>โหมด</th>
+              <th>ความชื้น</th>
+              <th>อุณหภูมิ</th>
+            </tr>
+          </table>
           <div class="wrapper" id="wrapper">
             <table style="width: 100%" id="table">
-              <tr>
-                <th>วันที่</th>
-                <th>เวลา</th>
-                <th>โหมด</th>
-                <th>ความชื้น</th>
-                <th>อุณหภูมิ</th>
-              </tr>
+
             </table>
           </div>
 
@@ -478,7 +481,7 @@ $(".main-container").click(function() {
 .wrapper {
   height: 400px;
   width: 100%;
-  overflow: auto;
+  overflow: overlay;
 }
 .main-container {
   margin-left: auto;
@@ -530,6 +533,12 @@ $(".main-container").click(function() {
   padding-top: 12px;
 }
 
+th {
+  width: 80px;
+}
+td {
+  width: 80px;
+}
 table {
   margin-top: 20px;
 }
