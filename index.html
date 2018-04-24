@@ -384,11 +384,11 @@ function addTable (date, time, status, moisture, temp, prepend = false) {
       <td>${temp}</td>
     </tr>
   `
-  if (prepend) {
-    $("#table").prepend(newTable)
-  } else {
-    $("#table").append(newTable)
-  }
+  $("#table").prepend(newTable)
+  // if (prepend) {
+  // } else {
+  //   $("#table").append(newTable)
+  // }
 }
 function getMode () {
   $.getJSON('https://senior-project-5657a.firebaseio.com/Type.json', function (data) {
